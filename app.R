@@ -18,7 +18,7 @@ library(shinythemes)
   # Define UI
   ui <- fluidPage(theme = shinytheme("cerulean"),
     navbarPage(
-       theme = "superhero",  # <--- To use a theme, uncomment this
+       #theme = "superhero",  # <--- To use a theme, uncomment this
       "MBA 515 Crime Data",
       tabPanel("Data By State",
                sidebarPanel(
