@@ -4,7 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 library(broom)
-library(ggpubr)
+#library(ggpubr)
 library(tidyverse)
 
 ui <- fluidPage(
@@ -46,6 +46,26 @@ ui <- fluidPage(
                         plotOutput("plot5")
                       )   
              ), # End Tab 5
+             tabPanel("Crimes State",
+                      mainPanel(
+                        plotOutput("plot6")
+                      )   
+             ), # End Tab 6
+             tabPanel("Crimes by Target",
+                      sidebarPanel(
+                        
+                        radioButtons("Button", 
+                                     label = "Choose:",
+                                     c("Persons", "Property", "Society"),
+                                     selected = "Persons"        
+                        )
+                        
+                      ), #Sidebar Panel
+                      mainPanel(
+                        plotOutput("plot7")
+                      )   
+             ), # End Tab 7
+             
   ) #NavBar Page End
 ) #UI End
 
@@ -131,6 +151,46 @@ server <- function(input, output, session) {
       labs(x = "Types of Offenses", y = "Percentage", 
            title = "Types of Texas Crimes by 2020")
   })
+  
+  # Tab 6 Data
+  df6 <- read.csv("Crimes_Against_Society_State.csv")
+  
+  output$plot6 <- renderPlot({
+    ggplot(df6,aes(x = df6$Total.Offenses, y = df6$State ))+
+      geom_col()+
+      labs(x = "State", y = "Total Offenses",
+           title = "Crimes Against Society by State")
+  })
+  
+  #Tab 7 Data
+  df7a <- read.csv("Crimes_Against_Persons_State.csv")
+  df7b <- read.csv("Crimes_Against_Property_State.csv")
+  df7c <- read.csv("Crimes_Against_Society_State.csv")
+  
+  output$plot7 <- renderPlot({
+    
+    button <- switch(input$Button,
+                     Persons =  ggplot(df7a)+
+                       geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       theme(axis.text.x = element_text(angle = 90))+
+                       labs(x = "State", y = "Total Offenses", 
+                            title = "Crimes Against Persons Offenses by State 2020"),
+                     Property = ggplot(df7b)+
+                       geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       theme(axis.text.x = element_text(angle = 90))+
+                       labs(x = "State", y = "Total Offenses", 
+                            title = "Crimes Against Property Offenses by State 2020"),
+                     Society = ggplot(df7c)+
+                       geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       theme(axis.text.x = element_text(angle = 90))+
+                       labs(x = "State", y = "Total Offenses", 
+                            title = "Crimes Against Society Offenses by State 2020")
+                     
+    )
+    button  
+  })
+  
+  
 } #Server End
 
 shinyApp(ui = ui, server = server)
