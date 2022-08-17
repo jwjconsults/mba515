@@ -46,7 +46,17 @@ ui <- fluidPage(
                         plotOutput("plot5")
                       )   
              ), # End Tab 5
-             tabPanel("Crimes State",
+             tabPanel("Population Covered",
+                      sidebarPanel(
+                        radioButtons("Button2", 
+                                     label = "Choose:",
+                                     c("Persons" = "persons2",
+                                       "Property" = "property2",
+                                       "Society" = "society2"),
+                                     selected = "persons2"        
+                        )
+                        
+                      ), #Sidebar Panel
                       mainPanel(
                         plotOutput("plot6")
                       )   
@@ -82,11 +92,6 @@ server <- function(input, output, session) {
   
   # Update SelectInput Dynamically
   updateSelectInput(session, "sel_Offenses", choices = colnames(df1[2:4]))
-  # observe({
-  #   
-  #   })
-  #Plot ggplot2
-  # Wrap in render cmd to make interactive
   
   output$plot1 <- renderPlot({
     df = df1[3:28 ,]
@@ -103,10 +108,11 @@ server <- function(input, output, session) {
   df2 <- read.csv("Crimes_Against_Persons_State.csv", header = T, sep = ",")
   
   output$plot2 <- renderPlot({
-    ggplot(filter(df2, df2$State != "Total"), aes(x=Population.Covered, y=Number.of.Participating.Agencies))+
+    ggplot(filter(df2, df2$State != "Total"), 
+           aes(x=Population.Covered, y=Number.of.Participating.Agencies))+
       geom_point()+ 
       geom_smooth(method="lm", col="black")+
-      stat_regline_equation()+
+      #stat_regline_equation()+
       theme(axis.text.x = element_text(angle = 90))+
       labs(x = "Population Covered", y = "# of Participating Agencies", 
            title = "Regression Model Population Covered vs Participating Agencies in 2020")
@@ -153,13 +159,37 @@ server <- function(input, output, session) {
   })
   
   # Tab 6 Data
-  df6 <- read.csv("Crimes_Against_Society_State.csv")
+  df6a <- read.csv("Crimes_Against_Society_State.csv")
+  df6b <- read.csv("Crimes_Against_Property_State.csv")
+  df6c <- read.csv("Crimes_Against_Society_State.csv")
   
   output$plot6 <- renderPlot({
-    ggplot(df6,aes(x = df6$Total.Offenses, y = df6$State ))+
-      geom_col()+
-      labs(x = "State", y = "Total Offenses",
-           title = "Crimes Against Society by State")
+    
+    button2 <- switch(input$Button2,
+                      persons2 =  ggplot(filter(df6a, df6a$State != "Total"), aes(x=Population.Covered, y=Total.Offenses))+
+                        geom_point()+
+                        geom_smooth(method="lm", col="black")+
+                        #stat_regline_equation()+
+                        theme(axis.text.x = element_text(angle = 90))+
+                        labs(x = "Population Covered", y = "Total Offenses",
+                             title = "Regression Model of Population Covered vs Total for Crimes Against Persons 2020"),
+                      property2 = ggplot(filter(df6b, df6b$State != "Total"), aes(x=Population.Covered, y=Total.Offenses))+
+                        geom_point()+
+                        geom_smooth(method="lm", col="black")+
+                        #stat_regline_equation()+
+                        theme(axis.text.x = element_text(angle = 90))+
+                        labs(x = "Population Covered", y = "Total Offenses",
+                             title = "Regression Model of Population Covered vs Total for Crimes Against Property 2020"),
+                      society2 = ggplot(filter(df6c, df6c$State != "Total"), aes(x=Population.Covered, y=Total.Offenses))+
+                        geom_point()+
+                        geom_smooth(method="lm", col="black")+
+                        #stat_regline_equation()+
+                        theme(axis.text.x = element_text(angle = 90))+
+                        labs(x = "Population Covered", y = "Total Offenses",
+                             title = "Regression Model of Population Covered vs Total for Crimes Against Society 2020")
+                      
+    )
+    button2 
   })
   
   #Tab 7 Data
@@ -172,16 +202,19 @@ server <- function(input, output, session) {
     button <- switch(input$Button,
                      Persons =  ggplot(df7a)+
                        geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       scale_y_continuous(labels = comma)+
                        theme(axis.text.x = element_text(angle = 90))+
                        labs(x = "State", y = "Total Offenses", 
                             title = "Crimes Against Persons Offenses by State 2020"),
                      Property = ggplot(df7b)+
-                       geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean",)+
+                       scale_y_continuous(labels = comma)+
                        theme(axis.text.x = element_text(angle = 90))+
                        labs(x = "State", y = "Total Offenses", 
                             title = "Crimes Against Property Offenses by State 2020"),
                      Society = ggplot(df7c)+
                        geom_bar(aes(State,Total.Offenses),stat="summary",fun="mean")+
+                       scale_y_continuous(labels = comma)+
                        theme(axis.text.x = element_text(angle = 90))+
                        labs(x = "State", y = "Total Offenses", 
                             title = "Crimes Against Society Offenses by State 2020")
